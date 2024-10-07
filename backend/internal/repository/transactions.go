@@ -3,17 +3,17 @@ package repository
 import (
 	"context"
 
-	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/jmoiron/sqlx"
 )
 
 type TransactionsRepo struct {
-	pool *pgxpool.Pool
+	db *sqlx.DB
 }
 
-func NewTransactionsRepo(pool *pgxpool.Pool) *TransactionsRepo {
-	return &TransactionsRepo{pool: pool}
+func NewTransactionsRepo(db *sqlx.DB) *TransactionsRepo {
+	return &TransactionsRepo{db: db}
 }
 
-func (r *TransactionsRepo) StartTransaction(ctx context.Context) (Transaction, error) {
-	return r.pool.Begin(ctx)
+func (r *TransactionsRepo) StartTransaction(ctx context.Context) (*sqlx.Tx, error) {
+	return r.db.Beginx()
 }

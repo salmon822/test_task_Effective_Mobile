@@ -40,3 +40,12 @@ func SongModels2Domain(s *models.Song) *domain.Song {
 
 	return song
 }
+func SongModels2DomainSongDetails(s *models.SongWithVerses) *domain.SongWithVerses {
+	return &domain.SongWithVerses{
+		Song:        *SongModels2Domain(&s.Song),
+		TotalVerses: s.TotalVerses,
+		Page:        s.Page,
+		PageSize:    s.PageSize,
+		Verses:      s.Verses,
+	}
+}

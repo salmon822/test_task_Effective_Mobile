@@ -15,6 +15,14 @@ type Song struct {
 	UpdatedAt   int64
 }
 
+type SongWithVerses struct {
+	Song
+	TotalVerses int64
+	Page        int64
+	PageSize    int64
+	Verses      []string
+}
+
 func SongDomain2Models(s *Song) *models.Song {
 	if s == nil {
 		return nil

@@ -44,7 +44,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("db init err: %v", err)
 	}
-	defer pool.Close()
+	defer pool.DB.Close()
 
 	repo, err := repository.NewRepository(cfg, pool.DB)
 	if err != nil {

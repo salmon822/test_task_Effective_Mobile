@@ -11,8 +11,8 @@ type (
 	Config struct {
 		Server   *ServerConfig
 		Postgres *PostgresConfig
+		Handler  *HandlerConfig
 	}
-
 	PostgresConfig struct {
 		Host     string
 		User     string
@@ -20,12 +20,15 @@ type (
 		DBName   string
 		Port     int
 	}
-
 	ServerConfig struct {
 		Port           int
 		ReadTimeout    time.Duration
 		WriteTimeout   time.Duration
 		MaxHeaderBytes int
+	}
+	HandlerConfig struct {
+		RequestTimeout time.Duration
+		QueueSize      int
 	}
 )
 
@@ -57,10 +60,14 @@ func Init(configPath string) (*Config, error) {
 			DBName:   envCfg.GetString("POSTGRES_DB"),
 			Port:     envCfg.GetInt("POSTGRES_PORT"),
 		},
+		Handler: &HandlerConfig{
+			RequestTimeout: jsonCfg.GetDuration("handler.requestTimeout"),
+			QueueSize:      jsonCfg.GetInt("handler.queueSize"),
+		},
 	}, nil
 }
 
 func (p *PostgresConfig) PgSource() string {
-	return fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable pool_max_conns=32",
+	return fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
 		p.Host, p.Port, p.User, p.Password, p.DBName)
 }

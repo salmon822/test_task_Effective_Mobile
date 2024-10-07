@@ -6,16 +6,28 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/exec"
 	"os/signal"
 	"syscall"
 
 	"github.com/salmon822/test_task/internal/config"
 	"github.com/salmon822/test_task/internal/db"
+	"github.com/salmon822/test_task/internal/handler"
+	"github.com/salmon822/test_task/internal/pkg/logger"
+	"github.com/salmon822/test_task/internal/repository"
 	"github.com/salmon822/test_task/internal/server"
+	"github.com/salmon822/test_task/internal/service"
+	"github.com/salmon822/test_task/migrations"
 	"golang.org/x/exp/slog"
 )
 
 func main() {
+	logging, err := logger.NewLogger()
+	if err != nil {
+		log.Panic(err)
+	}
+	defer logging.Sync()
+
 	var cfgPath string
 
 	flag.StringVar(&cfgPath, "cfg", "", "")
@@ -28,17 +40,37 @@ func main() {
 
 	ctx := context.Background()
 
-	mux := http.NewServeMux()
-
 	pool, err := db.NewPostgresClient(ctx, cfg.Postgres.PgSource())
 	if err != nil {
 		log.Fatalf("db init err: %v", err)
 	}
 	defer pool.Close()
 
-	_ = pool
+	repo, err := repository.NewRepository(cfg, pool.DB)
+	if err != nil {
+		logging.Panic(err)
+	}
 
-	srv := server.NewServer(cfg.Server, mux)
+	service, err := service.NewService(ctx, repo)
+	if err != nil {
+		logging.Panic(err)
+	}
+
+	migrateCommand := exec.Command("goose", "-dir", "migrations", "-allow-missing", "postgres", cfg.Postgres.PgSource(), "up")
+
+	migrateCommand.Stdout = os.Stdout
+	migrateCommand.Stderr = os.Stderr
+
+	if err := migrations.Migrate(cfg.Postgres.PgSource()); err != nil {
+		log.Fatalf("migrations init err: %v", err)
+	}
+
+	router := handler.NewHandler(
+		service.Songs,
+		cfg.Handler,
+		logging)
+
+	srv := server.NewServer(cfg.Server, router.Init())
 
 	go func() {
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {

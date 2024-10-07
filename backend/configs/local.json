@@ -4,5 +4,9 @@
         "readTimeout": "10s",
         "writeTimeout": "10s",
         "maxHeaderBytes": 1
+    },
+    "handler": {
+        "requestTimeout": "30s",
+        "queueSize": 50
     }
 }

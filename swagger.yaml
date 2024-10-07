@@ -1,0 +1,364 @@
+openapi: 3.0.3
+info:
+  title: Online Song Library
+  version: 1.0.0
+servers:
+  - url: 'http://localhost:8080'
+schemes:
+  - http
+produces:
+  - application/json
+consumes:
+  - application/json
+paths:
+  /songs:
+    get:
+      summary: Retrieve a list of songs
+      description: Fetches data from the song library with filtering on all fields and pagination.
+      parameters:
+        - in: query
+          name: group
+          schema:
+            type: string
+          description: Filter by group name.
+        - in: query
+          name: song
+          schema:
+            type: string
+          description: Filter by song title.
+        - in: query
+          name: releaseDate
+          schema:
+            type: integer
+            format: int64
+          description: Filter by release date.
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+          description: Page number for pagination.
+        - in: query
+          name: pageSize
+          schema:
+            type: integer
+            default: 10
+          description: Number of items per page.
+      responses:
+        '200':
+          description: Successful retrieval of song list.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SongListResponse'
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      summary: Add a new song
+      description: Adds a new song to the library.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SongCreateRequest'
+      responses:
+        '201':
+          description: Song successfully added.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Song'
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  '/songs/{id}':
+    get:
+      summary: Get song details
+      description: Retrieves detailed information about a song by ID.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: Song identifier.
+      responses:
+        '200':
+          description: Successful retrieval of song details.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Song'
+        '404':
+          description: Song not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    patch:
+      summary: Update song data
+      description: Modifies data of a song by ID.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: Song identifier.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SongUpdateRequest'
+      responses:
+        '200':
+          description: Song successfully updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Song'
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Song not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      summary: Delete a song
+      description: Removes a song from the library by ID.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: Song identifier.
+      responses:
+        '204':
+          description: Song successfully deleted.
+          content:
+            application/json:
+              schema: 
+                $ref: '#/components/schemas/SuccessResponse'
+        '404':
+          description: Song not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  '/songs/{id}/text':
+    get:
+      summary: Get song lyrics
+      description: Retrieves the lyrics of a song with pagination over verses.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: Song identifier.
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+          description: Page number for verse pagination.
+        - in: query
+          name: pageSize
+          schema:
+            type: integer
+            default: 1
+          description: Number of verses per page.
+      responses:
+        '200':
+          description: Successful retrieval of song lyrics.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SongTextResponse'
+        '404':
+          description: Song not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+components:
+  schemas:
+    SongCreateRequest:
+      properties:
+        song:
+          $ref: '#/components/schemas/Song'
+    SongUpdateRequest:
+      properties:
+        song:
+          $ref: '#/components/schemas/Song'
+    Song:
+      type: object
+      required:
+        - id
+        - groupName
+        - songTitle
+        - releaseDate
+        - songText
+        - link
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Song identifier
+          example: 1
+        groupName:
+          type: string
+          description: Name of the group or artist.
+          example: Muse
+        songTitle:
+          type: string
+          description: Title of the song.
+          example: Supermassive Black Hole
+        releaseDate:
+          type: integer
+          format: int64
+          description: Release date.
+          example: '2006-07-16'
+        songText:
+          type: string
+          description: Lyrics of the song.
+          example: |-
+            Ooh baby, don't you know I suffer?
+            Ooh baby, can you hear me moan?
+        link:
+          type: string
+          format: uri
+          description: Link to the song.
+          example: 'https://www.youtube.com/watch?v=Xsp3_a-PMTw'
+        createdAt:
+          type: integer
+          format: int64
+          description: Record creation timestamp.
+          example: '2023-10-05T12:34:56Z'
+        updatedAt:
+          type: integer
+          format: int64
+          description: Record update timestamp.
+          example: '2023-10-05T12:34:56Z'
+    SongListResponse:
+      type: object
+      properties:
+        totalItems:
+          type: integer
+          description: Total number of songs.
+          example: 100
+        page:
+          type: integer
+          description: Current page number.
+          example: 1
+        pageSize:
+          type: integer
+          description: Number of items per page.
+          example: 10
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Song'
+    SongTextResponse:
+      type: object
+      properties:
+        songId:
+          type: integer
+          description: Song identifier.
+          example: 1
+        totalVerses:
+          type: integer
+          description: Total number of verses.
+          example: 5
+        page:
+          type: integer
+          description: Current page number.
+          example: 1
+        pageSize:
+          type: integer
+          description: Number of verses per page.
+          example: 1
+        verses:
+          type: array
+          items:
+            type: string
+          description: List of verses.
+          example:
+            - 'Ooh baby, don''t you know I suffer?'
+    ErrorResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          format: int64
+          description: Error code.
+          example: 400
+        message:
+          type: string
+          description: Error message.
+          example: Bad Request
+        detail:
+          type: string
+          description: Detailed information about the error.
+          example: The 'group' field is required.
+    SuccessResponse:
+      type: object
+      description: Типовой запрос для ответа на Post запросы, которые не должны возвращать никаких данных
+      properties:
+        success:
+          type: boolean 
+

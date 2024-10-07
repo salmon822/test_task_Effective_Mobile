@@ -94,37 +94,37 @@ func (h *handler) updateSong(w http.ResponseWriter, r *http.Request) {
 	writes.WriteResponseWithErrorLog(w, http.StatusOK, song)
 }
 
-// func (h *handler) getSongText(w http.ResponseWriter, r *http.Request) {
-// 	var (
-// 		id       int64
-// 		page     int64
-// 		pageSize int64
-// 	)
-// 	defer r.Body.Close()
-// 	if err := h.parsePathInt64Param(r, "id", &id); err != nil {
-// 		writes.WriteErrorResponseWithErrorLog(w, fmt.Errorf("parse failed: %w", err))
-// 		return
-// 	}
+func (h *handler) getSongText(w http.ResponseWriter, r *http.Request) {
+	var (
+		id       int64
+		page     int64
+		pageSize int64
+	)
+	defer r.Body.Close()
+	if err := h.parsePathInt64Param(r, "id", &id); err != nil {
+		writes.WriteErrorResponseWithErrorLog(w, fmt.Errorf("parse failed: %w", err))
+		return
+	}
 
-// 	page, err := h.parseQueryInt64Param(r, "page", 1)
-// 	if err != nil {
-// 		writes.WriteErrorResponseWithErrorLog(w, fmt.Errorf("parse failed: %w", err))
-// 		return
-// 	}
-// 	pageSize, err = h.parseQueryInt64Param(r, "pageSize", 5)
-// 	if err != nil {
-// 		writes.WriteErrorResponseWithErrorLog(w, fmt.Errorf("parse failed: %w", err))
-// 		return
-// 	}
+	page, err := h.parseQueryInt64Param(r, "page", 1)
+	if err != nil {
+		writes.WriteErrorResponseWithErrorLog(w, fmt.Errorf("parse failed: %w", err))
+		return
+	}
+	pageSize, err = h.parseQueryInt64Param(r, "pageSize", 5)
+	if err != nil {
+		writes.WriteErrorResponseWithErrorLog(w, fmt.Errorf("parse failed: %w", err))
+		return
+	}
 
-// 	ctx, cancel := context.WithTimeout(r.Context(), h.cfg.RequestTimeout)
-// 	defer cancel()
+	ctx, cancel := context.WithTimeout(r.Context(), h.cfg.RequestTimeout)
+	defer cancel()
 
-// 	res, err := h.songs.GetSongTextByID(ctx, id, page, pageSize)
-// 	if err != nil {
-// 		writes.WriteErrorResponseWithErrorLog(w, fmt.Errorf("fa: %w", err))
-// 		return
-// 	}
+	res, err := h.songs.GetSongTextByID(ctx, id, page, pageSize)
+	if err != nil {
+		writes.WriteErrorResponseWithErrorLog(w, fmt.Errorf("fa: %w", err))
+		return
+	}
 
-// 	writes.WriteResponseWithErrorLog(w, http.StatusOK, res)
-// }
+	writes.WriteResponseWithErrorLog(w, http.StatusOK, res)
+}

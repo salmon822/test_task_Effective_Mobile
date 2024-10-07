@@ -10,3 +10,11 @@ type Song struct {
 	CreatedAt   int64
 	UpdatedAt   int64
 }
+
+type SongWithVerses struct {
+	Song
+	TotalVerses int64
+	Page        int64
+	PageSize    int64
+	Verses      []string
+}

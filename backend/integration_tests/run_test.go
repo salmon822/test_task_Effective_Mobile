@@ -6,6 +6,6 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-func TestIntegration(t *testing.T) {
+func TestSuiteRun(t *testing.T) {
 	suite.Run(t, new(SongSuite))
 }

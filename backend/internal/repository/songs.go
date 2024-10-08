@@ -28,11 +28,15 @@ func NewSongsRepository(
 
 func (r *SongsRepository) WithTX(tx *sqlx.Tx) Songs {
 	return &SongsRepository{
-		db: tx,
+		db:     tx,
+		logger: r.logger,
 	}
 }
 
 func (r *SongsRepository) Create(ctx context.Context, song *models.Song) (*models.Song, error) {
+	if r.logger == nil {
+		return nil, fmt.Errorf("SongsRepo/Create: logger is nil")
+	}
 	query := `
 		INSERT INTO songs (id, group_name, song_title, release_date, song_text, link, created_at, updated_at)
 		VALUES (default, $1, $2, $3, $4, $5, $6, $7)
@@ -52,8 +56,6 @@ func (r *SongsRepository) Create(ctx context.Context, song *models.Song) (*model
 		return nil, fmt.Errorf("SongsRepo/Create: error: %w", err)
 	}
 
-	r.logger.Infof("Song created successfully with ID: %d", song.ID)
-
 	return song, nil
 }
 
@@ -69,8 +71,6 @@ func (r *SongsRepository) Delete(ctx context.Context, id int64) error {
 	if err != nil {
 		return fmt.Errorf("SongsRepo/Delete: error: %w", err)
 	}
-
-	r.logger.Infof("Song with ID %d deleted successfully", id)
 
 	return nil
 }
@@ -96,8 +96,6 @@ func (r *SongsRepository) GetById(ctx context.Context, id int64) (*models.Song, 
 		return nil, fmt.Errorf("SongsRepo/GetById: error: %w", err)
 	}
 
-	r.logger.Infof("Song with ID %d retrieved successfully", id)
-
 	return song, nil
 }
 
@@ -114,8 +112,6 @@ func (r *SongsRepository) Update(ctx context.Context, data *models.Song) (*model
 	if err != nil {
 		return nil, fmt.Errorf("SongsRepo/Update: error: %w", err)
 	}
-
-	r.logger.Infof("Song with ID %d updated successfully", data.ID)
 
 	return data, nil
 }
@@ -168,8 +164,6 @@ func (r *SongsRepository) GetFilteredSongs(ctx context.Context, filters *models.
 		}
 		songs = append(songs, &song)
 	}
-
-	r.logger.Infof("Filtered songs retrieved successfully, count: %d", len(songs))
 
 	return songs, nil
 }

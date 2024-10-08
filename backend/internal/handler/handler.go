@@ -86,6 +86,16 @@ func (h *handler) parseQueryInt64Param(r *http.Request, paramName string, defaul
 	return paramValue, nil
 }
 
+func (h *handler) parseQueryStringParam(r *http.Request, paramName string, dest **string) error {
+	param := r.URL.Query().Get(paramName)
+	if param == "" {
+		return nil
+	}
+
+	*dest = &param
+	return nil
+}
+
 func (h *handler) Init() http.Handler {
 	router := mux.NewRouter()
 
@@ -94,6 +104,7 @@ func (h *handler) Init() http.Handler {
 	songsRouter.Handle("/{id}/delete", http.HandlerFunc(h.deleteSong)).Methods(http.MethodDelete)
 	songsRouter.Handle("/{id}/update", http.HandlerFunc(h.updateSong)).Methods(http.MethodPatch)
 	songsRouter.Handle("/{id}/song-text", http.HandlerFunc(h.getSongText)).Methods(http.MethodPost)
+	songsRouter.Handle("/filter", http.HandlerFunc(h.getFilteredSongs)).Methods(http.MethodGet)
 
 	router.Use(h.corsMiddleware)
 	return router

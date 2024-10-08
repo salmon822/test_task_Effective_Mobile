@@ -9,11 +9,19 @@ import (
 
 type (
 	Config struct {
-		Server   *ServerConfig
-		Postgres *PostgresConfig
-		Handler  *HandlerConfig
+		Server             *ServerConfig
+		Postgres           *PostgresConfig
+		Handler            *HandlerConfig
+		PostgresTestConfig *PostgresTestConfig
 	}
 	PostgresConfig struct {
+		Host     string
+		User     string
+		Password string
+		DBName   string
+		Port     int
+	}
+	PostgresTestConfig struct {
 		Host     string
 		User     string
 		Password string
@@ -60,6 +68,13 @@ func Init(configPath string) (*Config, error) {
 			DBName:   envCfg.GetString("POSTGRES_DB"),
 			Port:     envCfg.GetInt("POSTGRES_PORT"),
 		},
+		PostgresTestConfig: &PostgresTestConfig{
+			Host:     envCfg.GetString("POSTGRES_TEST_HOST"),
+			User:     envCfg.GetString("POSTGRES_TEST_USER"),
+			Password: envCfg.GetString("POSTGRES_TEST_PASSWORD"),
+			DBName:   envCfg.GetString("POSTGRES_TEST_DB"),
+			Port:     envCfg.GetInt("POSTGRES_TEST_PORT"),
+		},
 		Handler: &HandlerConfig{
 			RequestTimeout: jsonCfg.GetDuration("handler.requestTimeout"),
 			QueueSize:      jsonCfg.GetInt("handler.queueSize"),
@@ -68,6 +83,11 @@ func Init(configPath string) (*Config, error) {
 }
 
 func (p *PostgresConfig) PgSource() string {
+	return fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
+		p.Host, p.Port, p.User, p.Password, p.DBName)
+}
+
+func (p *PostgresTestConfig) PgTestSource() string {
 	return fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
 		p.Host, p.Port, p.User, p.Password, p.DBName)
 }

@@ -23,6 +23,12 @@ type SongWithVerses struct {
 	Verses      []string
 }
 
+type SongFilters struct {
+	GroupName   *string
+	SongTitle   *string
+	ReleaseDate *int64
+}
+
 func SongDomain2Models(s *Song) *models.Song {
 	if s == nil {
 		return nil

@@ -18,3 +18,9 @@ type SongWithVerses struct {
 	PageSize    int64
 	Verses      []string
 }
+
+type SongFilters struct {
+	GroupName   *string
+	SongTitle   *string
+	ReleaseDate *int64
+}

@@ -49,3 +49,19 @@ func SongModels2DomainSongDetails(s *models.SongWithVerses) *domain.SongWithVers
 		Verses:      s.Verses,
 	}
 }
+
+func SongFiltersModels2Domain(s *models.SongFilters) *domain.SongFilters {
+	return &domain.SongFilters{
+		GroupName:   s.GroupName,
+		SongTitle:   s.SongTitle,
+		ReleaseDate: s.ReleaseDate,
+	}
+}
+
+func SongFiltersDomain2Models(s *domain.SongFilters) *models.SongFilters {
+	return &models.SongFilters{
+		GroupName:   s.GroupName,
+		SongTitle:   s.SongTitle,
+		ReleaseDate: s.ReleaseDate,
+	}
+}

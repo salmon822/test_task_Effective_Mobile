@@ -47,20 +47,6 @@ type SongCreateRequest struct {
 	Song *Song `json:"song,omitempty"`
 }
 
-// SongListResponse defines model for SongListResponse.
-type SongListResponse struct {
-	Items *[]Song `json:"items,omitempty"`
-
-	// Page Current page number.
-	Page *int `json:"page,omitempty"`
-
-	// PageSize Number of items per page.
-	PageSize *int `json:"pageSize,omitempty"`
-
-	// TotalItems Total number of songs.
-	TotalItems *int `json:"totalItems,omitempty"`
-}
-
 // SongTextResponse defines model for SongTextResponse.
 type SongTextResponse struct {
 	// Page Current page number.
@@ -89,21 +75,21 @@ type SuccessResponse struct {
 	Success *bool `json:"success,omitempty"`
 }
 
-// GetSongsParams defines parameters for GetSongs.
-type GetSongsParams struct {
-	// Group Filter by group name.
-	Group *string `form:"group,omitempty" json:"group,omitempty"`
+// GetSongsFilterParams defines parameters for GetSongsFilter.
+type GetSongsFilterParams struct {
+	// GroupName Filter by group name
+	GroupName *string `form:"groupName,omitempty" json:"groupName,omitempty"`
 
-	// Song Filter by song title.
-	Song *string `form:"song,omitempty" json:"song,omitempty"`
+	// SongTitle Filter by song title
+	SongTitle *string `form:"songTitle,omitempty" json:"songTitle,omitempty"`
 
-	// ReleaseDate Filter by release date.
+	// ReleaseDate Filter by release date
 	ReleaseDate *int64 `form:"releaseDate,omitempty" json:"releaseDate,omitempty"`
 
-	// Page Page number for pagination.
+	// Page Page number for pagination
 	Page *int `form:"page,omitempty" json:"page,omitempty"`
 
-	// PageSize Number of items per page.
+	// PageSize Number of items per page
 	PageSize *int `form:"pageSize,omitempty" json:"pageSize,omitempty"`
 }
 
@@ -116,8 +102,8 @@ type GetSongsIdTextParams struct {
 	PageSize *int `form:"pageSize,omitempty" json:"pageSize,omitempty"`
 }
 
-// PostSongsJSONRequestBody defines body for PostSongs for application/json ContentType.
-type PostSongsJSONRequestBody = SongCreateRequest
+// PostSongsFilterJSONRequestBody defines body for PostSongsFilter for application/json ContentType.
+type PostSongsFilterJSONRequestBody = SongCreateRequest
 
 // PatchSongsIdJSONRequestBody defines body for PatchSongsId for application/json ContentType.
 type PatchSongsIdJSONRequestBody = SongUpdateRequest

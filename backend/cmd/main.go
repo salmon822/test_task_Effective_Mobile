@@ -18,7 +18,6 @@ import (
 	"github.com/salmon822/test_task/internal/server"
 	"github.com/salmon822/test_task/internal/service"
 	"github.com/salmon822/test_task/migrations"
-	"golang.org/x/exp/slog"
 )
 
 func main() {
@@ -28,6 +27,8 @@ func main() {
 	}
 	defer logging.Sync()
 
+	logging.Infof("Starting application")
+
 	var cfgPath string
 
 	flag.StringVar(&cfgPath, "cfg", "", "")
@@ -35,35 +36,44 @@ func main() {
 
 	cfg, err := config.Init(cfgPath)
 	if err != nil {
-		log.Fatalf("config init err: %v", err)
+		logging.Fatalf("Failed to initialize config: %v", err)
 	}
+
+	logging.Infof("Configuration initialized successfully")
 
 	ctx := context.Background()
 
 	pool, err := db.NewPostgresClient(ctx, cfg.Postgres.PgSource())
 	if err != nil {
-		log.Fatalf("db init err: %v", err)
+		logging.Fatalf("Failed to initialize database: %v", err)
 	}
 	defer pool.DB.Close()
 
-	repo, err := repository.NewRepository(cfg, pool.DB)
+	logging.Infof("Database connection established")
+
+	repo, err := repository.NewRepository(cfg, pool.DB, logging)
 	if err != nil {
-		logging.Panic(err)
+		logging.Panicf("Failed to initialize repository: %v", err)
 	}
 
-	service, err := service.NewService(ctx, repo)
+	logging.Infof("Repository initialized successfully")
+
+	service, err := service.NewService(ctx, repo, logging)
 	if err != nil {
-		logging.Panic(err)
+		logging.Panicf("Failed to initialize service: %v", err)
 	}
+
+	logging.Infof("Services initialized successfully")
 
 	migrateCommand := exec.Command("goose", "-dir", "migrations", "-allow-missing", "postgres", cfg.Postgres.PgSource(), "up")
-
 	migrateCommand.Stdout = os.Stdout
 	migrateCommand.Stderr = os.Stderr
 
 	if err := migrations.Migrate(cfg.Postgres.PgSource()); err != nil {
-		log.Fatalf("migrations init err: %v", err)
+		logging.Fatalf("Failed to apply migrations: %v", err)
 	}
+
+	logging.Infof("Migrations applied successfully")
 
 	router := handler.NewHandler(
 		service.Songs,
@@ -74,11 +84,11 @@ func main() {
 
 	go func() {
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatalf("server init err: %v", err)
+			logging.Fatalf("Failed to start server: %v", err)
 		}
 	}()
 
-	slog.Info("server listening", "port", cfg.Server.Port)
+	logging.Infof("Server listening on port: %d", cfg.Server.Port)
 
 	// graceful shutdown here
 	quit := make(chan os.Signal, 1)
@@ -86,11 +96,13 @@ func main() {
 
 	<-quit
 
-	slog.Info("kill signal received, shutting down application....")
+	logging.Infof("Shutdown signal received, shutting down server...")
+
 	err = srv.Shutdown(context.Background())
 	if err != nil {
-		panic(err)
+		logging.Errorf("Failed to gracefully shutdown server: %v", err)
 	}
 
-	slog.Info("application finished")
+	logging.Infof("Server shutdown complete")
+	logging.Infof("Application finished")
 }

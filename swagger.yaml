@@ -4,53 +4,51 @@ info:
   version: 1.0.0
 servers:
   - url: 'http://localhost:8080'
-schemes:
-  - http
-produces:
-  - application/json
-consumes:
-  - application/json
 paths:
-  /songs:
+  /songs/filter:
     get:
       summary: Retrieve a list of songs
       description: Fetches data from the song library with filtering on all fields and pagination.
       parameters:
         - in: query
-          name: group
+          name: groupName
           schema:
             type: string
-          description: Filter by group name.
+          description: Filter by group name
+          example: Muse
         - in: query
-          name: song
+          name: songTitle
           schema:
             type: string
-          description: Filter by song title.
+          description: Filter by song title
+          example: Supermassive Black Hole
         - in: query
           name: releaseDate
           schema:
             type: integer
             format: int64
-          description: Filter by release date.
+          description: Filter by release date
         - in: query
           name: page
           schema:
             type: integer
             default: 1
-          description: Page number for pagination.
+          description: Page number for pagination
         - in: query
           name: pageSize
           schema:
             type: integer
             default: 10
-          description: Number of items per page.
+          description: Number of items per page
       responses:
         '200':
-          description: Successful retrieval of song list.
+          description: A list of songs
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SongListResponse'
+                type: array
+                items:
+                  $ref: '#/components/schemas/Song'
         '400':
           description: Bad request.
           content:
@@ -93,8 +91,8 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
   '/songs/{id}':
     get:
-      summary: Get song details
-      description: Retrieves detailed information about a song by ID.
+      summary: Get song details(verses)
+      description: Retrieves detailed information about a song text by ID.
       parameters:
         - in: path
           name: id
@@ -104,11 +102,11 @@ paths:
           description: Song identifier.
       responses:
         '200':
-          description: Successful retrieval of song details.
+          description: Successful retrieval of song text details.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Song'
+                $ref: '#/components/schemas/SongWithVerses'
         '404':
           description: Song not found.
           content:
@@ -191,48 +189,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-  '/songs/{id}/text':
-    get:
-      summary: Get song lyrics
-      description: Retrieves the lyrics of a song with pagination over verses.
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: integer
-          description: Song identifier.
-        - in: query
-          name: page
-          schema:
-            type: integer
-            default: 1
-          description: Page number for verse pagination.
-        - in: query
-          name: pageSize
-          schema:
-            type: integer
-            default: 1
-          description: Number of verses per page.
-      responses:
-        '200':
-          description: Successful retrieval of song lyrics.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SongTextResponse'
-        '404':
-          description: Song not found.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '500':
-          description: Internal server error.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
 components:
   schemas:
     SongCreateRequest:
@@ -294,6 +250,34 @@ components:
           format: int64
           description: Record update timestamp.
           example: '2023-10-05T12:34:56Z'
+    SongWithVerses:
+      type: object
+      properties:
+        song:
+          $ref: '#/components/schemas/Song'
+        totalVerses:
+          type: integer
+          format: int64
+          description: Total number of verses in the song
+          example: 4
+        page:
+          type: integer
+          format: int64
+          description: Current page number
+          example: 1
+        pageSize:
+          type: integer
+          format: int64
+          description: Number of verses per page
+          example: 2
+        verses:
+          type: array
+          items:
+            type: string
+            description: List of verses on the current page
+          example:
+            - "Ooh baby, don't you know I suffer?"
+            - "Ooh baby, can you hear me moan?"
     SongListResponse:
       type: object
       properties:
@@ -339,6 +323,22 @@ components:
           description: List of verses.
           example:
             - 'Ooh baby, don''t you know I suffer?'
+    SongFilters:
+      type: object
+      properties:
+        groupName:
+          type: string
+          description: Filter by group name
+          example: Muse
+        songTitle:
+          type: string
+          description: Filter by song title
+          example: Supermassive Black Hole
+        releaseDate:
+          type: integer
+          format: int64
+          description: Filter by release date 
+          example: '2006-07-16'
     ErrorResponse:
       type: object
       properties:
@@ -360,5 +360,4 @@ components:
       description: Типовой запрос для ответа на Post запросы, которые не должны возвращать никаких данных
       properties:
         success:
-          type: boolean 
-
+          type: boolean

@@ -81,6 +81,15 @@ This will start the server on http://localhost:8080.
 
 The repository includes integration tests.
 
+Before you can run tests, you need to either run the container with PostgreSQL for Tests or run it locally without the container.
+
+Running PostgreSQL for Tests in a Docker container:
+```bash
+make postgres.test.start
+```
+
+Also make sure you fill the .env file in /integrations_tests directory, this example also presents in .env.example
+
 To run the tests:
 ```bash
 make tests
@@ -99,4 +108,5 @@ Base URL: http://localhost:8080
 ## Notes
 
 Make sure PostgreSQL is running before you start the application.
-Ensure that the models from OpenAPI are generated.
+Same works for tests.
+Ensure that models from OpenAPI are generated.

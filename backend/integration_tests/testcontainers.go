@@ -5,8 +5,6 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
-	"os/signal"
-	"syscall"
 
 	"github.com/salmon822/test_task/internal/config"
 	"github.com/salmon822/test_task/internal/db"
@@ -25,23 +23,23 @@ type TestSuite struct {
 	cfg    *config.Config
 	logger logger.Logger
 
-	handler handler.Handler
-	srv     *server.Server
+	httpHandler http.Handler
+	srv         *server.Server
 }
 
 func (s *TestSuite) SetupSuite() {
 	var err error
 
-	s.cfg, err = config.Init("../configs/local")
+	s.cfg, err = config.Init("../configs/local.json")
 	s.Require().NoError(err, "Failed to initialize config")
 
 	s.logger, err = logger.NewLogger()
 	s.Require().NoError(err, "Failed to initialize logger")
 
-	s.pgClient, err = db.NewPostgresClient(context.Background(), s.cfg.Postgres.PgSource())
+	s.pgClient, err = db.NewPostgresClient(context.Background(), s.cfg.PostgresTestConfig.PgTestSource())
 	s.Require().NoError(err, "Failed to initialize Postgres client")
 
-	migrateCommand := exec.Command("goose", "-dir", "migrations", "-allow-missing", "postgres", s.cfg.Postgres.PgSource(), "up")
+	migrateCommand := exec.Command("goose", "-dir", "../migrations", "-allow-missing", "postgres", s.cfg.PostgresTestConfig.PgTestSource(), "up")
 	migrateCommand.Stdout = os.Stdout
 	migrateCommand.Stderr = os.Stderr
 	err = migrateCommand.Run()
@@ -53,11 +51,10 @@ func (s *TestSuite) SetupSuite() {
 	services, err := service.NewService(context.Background(), repo, s.logger)
 	s.Require().NoError(err, "Failed to initialize services")
 
-	s.handler = handler.NewHandler(services.Songs, s.cfg.Handler, s.logger)
-	s.Require().NotNil(s.handler, "Handler is nil")
+	h := handler.NewHandler(services.Songs, s.cfg.Handler, s.logger)
+	s.httpHandler = h.Init()
 
-	s.srv = server.NewServer(s.cfg.Server, s.handler.Init())
-	s.Require().NotNil(s.srv, "Server is nil")
+	s.srv = server.NewServer(s.cfg.Server, s.httpHandler)
 }
 
 func (s *TestSuite) TearDownSuite() {
@@ -96,15 +93,4 @@ func (s *TestSuite) RunTestServer() {
 			s.logger.Fatalf("Failed to start server: %v", err)
 		}
 	}()
-
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, syscall.SIGTERM, syscall.SIGINT)
-
-	<-quit
-
-	s.logger.Infof("Shutdown signal received, shutting down server...")
-	err := s.srv.Shutdown(context.Background())
-	if err != nil {
-		s.logger.Errorf("Failed to gracefully shutdown server: %v", err)
-	}
 }

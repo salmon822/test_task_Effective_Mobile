@@ -1,5 +1,3 @@
-# test_task_Effective_Mobile
-
 # Online Song Library - Test Task
 
 This repository is a test task implementing an **Online Song Library**. It allows you to manage songs, including creating, updating, deleting, and retrieving song data. It also includes features like song text pagination and filtering.
@@ -19,7 +17,6 @@ The test task includes the following functionalities:
 - Create a new song
 - Update an existing song
 - Delete a song
-- Retrieve song details by ID
 - Retrieve a list of songs with filtering by group name, song title, and release date
 - Pagination of song lyrics by verses
 
@@ -92,11 +89,11 @@ make tests
 ## API Endpoints
 
 Base URL: http://localhost:8080
-POST /songs/create: Create a new song.
-GET /songs/filter: Retrieve a list of songs with filtering and pagination.
-GET /songs/{id}: Get song text by its ID.
-PATCH /songs/{id}/update: Update an existing song by its ID.
-DELETE /songs/{id}/delete: Delete a song by its ID.
+- POST /songs/create: Create a new song.
+- GET /songs/filter: Retrieve a list of songs with filtering and pagination.
+- GET /songs/{id}: Get song text by its ID.
+- PATCH /songs/{id}/update: Update an existing song by its ID.
+- DELETE /songs/{id}/delete: Delete a song by its ID.
 
 
 ## Notes
